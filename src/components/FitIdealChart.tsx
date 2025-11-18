@@ -1,7 +1,7 @@
 'use client'
 
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts'
-import type { PerfilComportamental } from '@/lib/supabase-types'
+import type { PerfilComportamental } from '@/types/database.types'
 import type { PerfilIdeal } from '@/lib/tipos/perfil-ideal'
 
 interface FitIdealChartProps {

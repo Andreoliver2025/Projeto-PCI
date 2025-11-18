@@ -210,7 +210,7 @@ export default function TesteDISC() {
             </button>
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

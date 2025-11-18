@@ -3,7 +3,7 @@
  * Compara um perfil real (candidato/líder) com o perfil ideal da função
  */
 
-import type { PerfilComportamental } from './supabase-types'
+import type { PerfilComportamental } from '@/types/database.types'
 import type { PerfilIdeal, RangeDISC, RangeMBTI } from './tipos/perfil-ideal'
 
 export interface FitIdealScore {
