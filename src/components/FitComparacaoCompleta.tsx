@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Users, Briefcase, Crown } from 'lucide-react'
-import type { PerfilComportamental } from '@/lib/supabase-types'
+import type { PerfilComportamental } from '@/types/database.types'
 import type { PerfilIdeal } from '@/lib/tipos/perfil-ideal'
 import FitChart from './FitChart'
 import FitIdealChart from './FitIdealChart'
@@ -274,18 +274,15 @@ export default function FitComparacaoCompleta({
                   DISC - Líder
                 </h4>
                 <div className="space-sm">
-                  {['disc_d', 'disc_i', 'disc_s', 'disc_c'].map((dim) => {
-                    const key = dim as keyof Pick<
-                      typeof fitLider.detalhes,
-                      'disc_d' | 'disc_i' | 'disc_s' | 'disc_c'
-                    >
-                    const detalhe = fitLider.detalhes[key]
+                  {['d', 'i', 's', 'c'].map((dim) => {
+                    const key = dim as keyof typeof fitLider.detalhes.disc_match
+                    const score = fitLider.detalhes.disc_match[key]
                     return (
                       <div key={dim} className="flex justify-between text-caption">
                         <span className="text-textSecondary">
-                          {dim.replace('disc_', '').toUpperCase()}:
+                          {dim.toUpperCase()}:
                         </span>
-                        <span className="text-textPrimary">{detalhe.score}%</span>
+                        <span className="text-textPrimary">{score}%</span>
                       </div>
                     )
                   })}
