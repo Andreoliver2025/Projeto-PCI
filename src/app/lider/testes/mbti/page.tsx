@@ -170,7 +170,7 @@ export default function TesteMBTILider() {
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                     respostas[pergunta.id] === valor
                       ? 'border-accent bg-accent'
-                      : 'border-secondary-400'
+                      : 'border-secondary-300'
                   }`}>
                     {respostas[pergunta.id] === valor && (
                       <Check className="w-3 h-3 text-white" aria-hidden="true" />

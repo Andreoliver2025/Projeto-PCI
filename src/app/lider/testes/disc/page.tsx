@@ -165,7 +165,7 @@ export default function TesteDISCLider() {
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
                     respostas[pergunta.id] === valor
                       ? 'border-primary bg-primary'
-                      : 'border-secondary-400'
+                      : 'border-secondary-300'
                   }`}>
                     {respostas[pergunta.id] === valor && (
                       <Check className="w-3 h-3 text-white" aria-hidden="true" />
