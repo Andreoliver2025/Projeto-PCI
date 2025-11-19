@@ -83,7 +83,62 @@ supabase/schema.sql
 supabase/rls-policies.sql
 ```
 
-### 4. Executar Projeto Localmente
+### 4. Instalar Pacote Svix (para Webhooks)
+
+```bash
+npm install svix
+```
+
+### 5. Configurar Webhook do Clerk
+
+O webhook sincroniza automaticamente usuários do Clerk para o Supabase.
+
+#### Passo 1: Obter o Webhook Secret
+
+1. Acesse o [Clerk Dashboard](https://dashboard.clerk.com)
+2. Selecione seu aplicativo
+3. Navegue para **Webhooks** no menu lateral
+4. Clique em **Add Endpoint**
+5. Configure:
+   - **Endpoint URL**: `https://seu-dominio.com/api/webhooks/clerk`
+   - **Subscribe to events**:
+     - ✅ `user.created`
+     - ✅ `user.updated`
+6. Copie o **Signing Secret** gerado
+
+#### Passo 2: Adicionar ao .env.local
+
+```env
+CLERK_WEBHOOK_SECRET=whsec_...
+```
+
+#### Passo 3: Testar Localmente (Opcional)
+
+Para testar webhooks localmente, use [ngrok](https://ngrok.com) ou [Clerk Testing](https://clerk.com/docs/testing):
+
+```bash
+# Instalar ngrok
+npm install -g ngrok
+
+# Expor porta local
+ngrok http 3000
+
+# Use a URL do ngrok como endpoint:
+# https://xyz123.ngrok.io/api/webhooks/clerk
+```
+
+#### Como Funciona
+
+Quando um usuário se registra no Clerk:
+1. Clerk envia evento `user.created` para o webhook
+2. O webhook valida a assinatura com Svix
+3. Extrai `clerk_id`, `nome`, `email` do payload
+4. Cria registro na tabela `usuarios` do Supabase com tipo `Principal`
+5. Logs detalhados para debug
+
+**Arquivo**: `/src/app/api/webhooks/clerk/route.ts`
+
+### 6. Executar Projeto Localmente
 
 ```bash
 npm run dev
@@ -221,6 +276,7 @@ Adicione no Netlify (Site settings → Environment variables):
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 CLERK_SECRET_KEY
+CLERK_WEBHOOK_SECRET
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
