@@ -4,9 +4,17 @@ import OpenAI from 'openai'
 
 // Item 9 do Build Sequence: Transcrição com Whisper API
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Lazy initialization to avoid build-time errors
+let openai: OpenAI | null = null
+
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY || 'sk-placeholder',
+    })
+  }
+  return openai
+}
 
 export async function POST(req: NextRequest) {
   const { userId } = auth()
@@ -25,7 +33,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Transcrever com Whisper
-    const transcription = await openai.audio.transcriptions.create({
+    const client = getOpenAIClient()
+    const transcription = await client.audio.transcriptions.create({
       file: audioFile,
       model: 'whisper-1',
       language,
