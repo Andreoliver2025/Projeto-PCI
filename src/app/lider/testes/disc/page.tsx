@@ -9,6 +9,7 @@ export default function TesteDISCLider() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const processoId = searchParams.get('processo')
+  const conviteToken = searchParams.get('convite')
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [respostas, setRespostas] = useState<Record<number, number>>({})
@@ -42,18 +43,27 @@ export default function TesteDISCLider() {
       const result = calcularDISC(respostas)
       setResultado(result)
 
+      // Determinar endpoint e body baseado em convite
+      const endpoint = conviteToken ? '/api/perfis/lider' : '/api/perfis'
+      const requestBody: any = {
+        disc_d: result.d,
+        disc_i: result.i,
+        disc_s: result.s,
+        disc_c: result.c,
+      }
+
+      // Se vier de convite, adicionar token
+      if (conviteToken) {
+        requestBody.convite_token = conviteToken
+      }
+
       // Salvar perfil do líder no banco via API
-      const response = await fetch('/api/perfis', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          disc_d: result.d,
-          disc_i: result.i,
-          disc_s: result.s,
-          disc_c: result.c,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -71,7 +81,11 @@ export default function TesteDISCLider() {
 
   const salvarEContinuar = async () => {
     // Redirecionar para o teste MBTI de líder
-    router.push(`/lider/testes/mbti?processo=${processoId}`)
+    if (conviteToken) {
+      router.push(`/lider/testes/mbti?convite=${conviteToken}`)
+    } else {
+      router.push(`/lider/testes/mbti?processo=${processoId}`)
+    }
   }
 
   const pergunta = discQuestions[currentQuestion]

@@ -9,6 +9,7 @@ export default function TesteDISC() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const processoId = searchParams.get('processo')
+  const conviteToken = searchParams.get('convite')
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [respostas, setRespostas] = useState<Record<number, number>>({})
@@ -42,18 +43,27 @@ export default function TesteDISC() {
       const result = calcularDISC(respostas)
       setResultado(result)
 
+      // Determinar endpoint e body baseado em convite
+      const endpoint = conviteToken ? '/api/perfis/candidato' : '/api/perfis'
+      const requestBody: any = {
+        disc_d: result.d,
+        disc_i: result.i,
+        disc_s: result.s,
+        disc_c: result.c,
+      }
+
+      // Se vier de convite, adicionar token
+      if (conviteToken) {
+        requestBody.convite_token = conviteToken
+      }
+
       // Salvar no banco via API
-      const response = await fetch('/api/perfis', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          disc_d: result.d,
-          disc_i: result.i,
-          disc_s: result.s,
-          disc_c: result.c,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -75,6 +85,9 @@ export default function TesteDISC() {
     if (origem === 'perfil') {
       // Se veio da página de perfil, redirecionar para MBTI e depois voltar
       router.push('/testes/mbti?origem=perfil')
+    } else if (conviteToken) {
+      // Se veio de um convite, passar o token para o MBTI
+      router.push(`/testes/mbti?convite=${conviteToken}`)
     } else {
       // Se veio de um processo, continuar no fluxo do processo
       router.push(`/testes/mbti?processo=${processoId}`)

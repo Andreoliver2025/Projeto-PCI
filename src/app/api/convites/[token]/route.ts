@@ -36,11 +36,9 @@ export async function GET(
         processo_id,
         processos (
           id,
-          titulo,
+          nome,
           descricao,
-          status,
-          data_inicio,
-          data_fim
+          status
         )
       `
       )
@@ -99,11 +97,9 @@ export async function GET(
         processoId: convite.processo_id,
         processo: processo ? {
           id: processo.id,
-          titulo: processo.titulo,
+          nome: processo.nome,
           descricao: processo.descricao,
           status: processo.status,
-          dataInicio: processo.data_inicio,
-          dataFim: processo.data_fim,
         } : null,
       },
     })

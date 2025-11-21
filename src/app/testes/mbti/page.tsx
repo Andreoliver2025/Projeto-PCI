@@ -9,6 +9,7 @@ export default function TesteMBTI() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const processoId = searchParams.get('processo')
+  const conviteToken = searchParams.get('convite')
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [respostas, setRespostas] = useState<Record<number, number>>({})
@@ -42,19 +43,28 @@ export default function TesteMBTI() {
       const result = calcularMBTI(respostas)
       setResultado(result)
 
+      // Determinar endpoint e body baseado em convite
+      const endpoint = conviteToken ? '/api/perfis/candidato' : '/api/perfis'
+      const requestBody: any = {
+        mbti_type: result.tipo,
+        mbti_e_i: result.e_i,
+        mbti_s_n: result.s_n,
+        mbti_t_f: result.t_f,
+        mbti_j_p: result.j_p,
+      }
+
+      // Se vier de convite, adicionar token
+      if (conviteToken) {
+        requestBody.convite_token = conviteToken
+      }
+
       // Salvar no banco via API
-      const response = await fetch('/api/perfis', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          mbti_type: result.tipo,
-          mbti_e_i: result.e_i,
-          mbti_s_n: result.s_n,
-          mbti_t_f: result.t_f,
-          mbti_j_p: result.j_p,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -76,6 +86,11 @@ export default function TesteMBTI() {
     if (origem === 'perfil') {
       // Se veio da página de perfil, voltar para lá
       router.push('/dashboard/perfil')
+    } else if (conviteToken) {
+      // Se veio de um convite, mostrar mensagem de sucesso
+      // (Por enquanto redireciona para uma página simples - pode ser melhorado)
+      alert('Testes concluídos com sucesso! Aguarde o contato do recrutador.')
+      window.location.href = '/'
     } else {
       // Se veio de um processo, ir para dashboard
       router.push(`/dashboard?perfil_completo=true`)

@@ -9,6 +9,7 @@ export default function TesteMBTILider() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const processoId = searchParams.get('processo')
+  const conviteToken = searchParams.get('convite')
 
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [respostas, setRespostas] = useState<Record<number, number>>({})
@@ -42,19 +43,28 @@ export default function TesteMBTILider() {
       const result = calcularMBTI(respostas)
       setResultado(result)
 
+      // Determinar endpoint e body baseado em convite
+      const endpoint = conviteToken ? '/api/perfis/lider' : '/api/perfis'
+      const requestBody: any = {
+        mbti_type: result.tipo,
+        mbti_e_i: result.e_i,
+        mbti_s_n: result.s_n,
+        mbti_t_f: result.t_f,
+        mbti_j_p: result.j_p,
+      }
+
+      // Se vier de convite, adicionar token
+      if (conviteToken) {
+        requestBody.convite_token = conviteToken
+      }
+
       // Salvar perfil do líder no banco via API
-      const response = await fetch('/api/perfis', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          mbti_type: result.tipo,
-          mbti_e_i: result.e_i,
-          mbti_s_n: result.s_n,
-          mbti_t_f: result.t_f,
-          mbti_j_p: result.j_p,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -71,9 +81,15 @@ export default function TesteMBTILider() {
   }
 
   const concluir = async () => {
-    // Redirecionar para dashboard de líder (quando implementado)
-    // Por enquanto redireciona para dashboard principal
-    router.push(`/dashboard`)
+    if (conviteToken) {
+      // Se veio de um convite, mostrar mensagem de sucesso
+      alert('Testes concluídos com sucesso! Você foi associado ao processo como líder.')
+      window.location.href = '/'
+    } else {
+      // Redirecionar para dashboard de líder (quando implementado)
+      // Por enquanto redireciona para dashboard principal
+      router.push(`/dashboard`)
+    }
   }
 
   const pergunta = mbtiQuestions[currentQuestion]

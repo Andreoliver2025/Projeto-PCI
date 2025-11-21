@@ -14,11 +14,9 @@ interface ConviteData {
   processoId: string
   processo: {
     id: string
-    titulo: string
+    nome: string
     descricao: string
     status: string
-    dataInicio: string
-    dataFim: string
   } | null
 }
 
@@ -195,7 +193,7 @@ export default function ConviteLiderPage() {
             {/* Process Info */}
             <div className="bg-secondary-50 rounded-lg p-4 mb-6">
               <h2 className="font-semibold text-textPrimary mb-2">
-                {convite.processo.titulo}
+                {convite.processo.nome}
               </h2>
               {convite.processo.descricao && (
                 <p className="text-sm text-textSecondary mb-4">

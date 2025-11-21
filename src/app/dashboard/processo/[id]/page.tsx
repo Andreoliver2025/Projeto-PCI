@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, UserPlus, Mail, FileText, TrendingUp, Crown, Briefcase } from 'lucide-react'
 import FitComparacaoCompleta from '@/components/FitComparacaoCompleta'
+import ConviteCandidatoModal from '@/components/ConviteCandidatoModal'
 import { PERFIS_IDEAIS_TEMPLATE } from '@/lib/tipos/perfil-ideal'
 
 export default function ProcessoDetalhes() {
@@ -13,10 +14,12 @@ export default function ProcessoDetalhes() {
 
   const [processo, setProcesso] = useState<any>(null)
   const [candidatos, setCandidatos] = useState<any[]>([])
+  const [funcaoId, setFuncaoId] = useState<string | null>(null)
   const [funcaoIdeal, setFuncaoIdeal] = useState<any>(null)
   const [liderPerfil, setLiderPerfil] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [modalConviteAberto, setModalConviteAberto] = useState(false)
 
   useEffect(() => {
     fetchProcesso()
@@ -40,6 +43,7 @@ export default function ProcessoDetalhes() {
 
       // Função ideal (pegar primeira função)
       if (data.funcoes && data.funcoes.length > 0) {
+        setFuncaoId(data.funcoes[0].id)
         setFuncaoIdeal(data.funcoes[0].perfil_ideal)
       }
 
@@ -134,13 +138,16 @@ export default function ProcessoDetalhes() {
             </div>
             <div className="flex gap-2">
               <Link
-                href={`/dashboard/definir-perfil-ideal?processo=${processoId}`}
+                href={`/dashboard/definir-perfil-ideal?processo=${processoId}${funcaoId ? `&funcao=${funcaoId}` : ''}`}
                 className="btn-outline flex items-center gap-2"
               >
                 <Briefcase className="w-5 h-5" />
                 Definir Perfil Ideal
               </Link>
-              <button className="btn-primary flex items-center gap-2">
+              <button
+                className="btn-primary flex items-center gap-2"
+                onClick={() => setModalConviteAberto(true)}
+              >
                 <UserPlus className="w-5 h-5" />
                 Convidar Candidato
               </button>
@@ -278,12 +285,24 @@ export default function ProcessoDetalhes() {
             {candidatos.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-600 mb-4">Nenhum candidato convidado ainda.</p>
-                <button className="btn-primary">Convidar Primeiro Candidato</button>
+                <button
+                  className="btn-primary"
+                  onClick={() => setModalConviteAberto(true)}
+                >
+                  Convidar Primeiro Candidato
+                </button>
               </div>
             )}
           </div>
         </div>
       </main>
+
+      {/* Modal de Convite de Candidato */}
+      <ConviteCandidatoModal
+        isOpen={modalConviteAberto}
+        onClose={() => setModalConviteAberto(false)}
+        processoId={processoId}
+      />
     </div>
   )
 }
