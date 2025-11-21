@@ -16,70 +16,94 @@ export default function ProcessoDetalhes() {
   const [funcaoIdeal, setFuncaoIdeal] = useState<any>(null)
   const [liderPerfil, setLiderPerfil] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // TODO: Carregar dados reais da API
-    setProcesso({
-      id: processoId,
-      nome: 'Desenvolvedor Frontend Senior',
-      status: 'ativo',
-      lider_nome: 'Carlos Mendes',
-      created_at: new Date().toISOString(),
-    })
-
-    // Mock perfil ideal da função (template "desenvolvedor")
-    setFuncaoIdeal(PERFIS_IDEAIS_TEMPLATE.desenvolvedor)
-
-    // Mock perfil do líder
-    setLiderPerfil({
-      disc_d: 75,
-      disc_i: 50,
-      disc_s: 60,
-      disc_c: 80,
-      mbti_type: 'INTJ',
-      mbti_e_i: 30,
-      mbti_s_n: 20,
-      mbti_t_f: 85,
-      mbti_j_p: 75,
-    })
-
-    // Mock candidatos
-    setCandidatos([
-      {
-        id: '1',
-        nome: 'João Silva',
-        email: 'joao@example.com',
-        status: 'em_avaliacao',
-        fit_score: 85,
-        fit_funcao: 82,
-        fit_lider: 88,
-        perfil: {
-          disc_d: 65,
-          disc_i: 45,
-          disc_s: 55,
-          disc_c: 70,
-          mbti_type: 'ISTJ',
-          mbti_e_i: 35,
-          mbti_s_n: 65,
-          mbti_t_f: 75,
-          mbti_j_p: 80,
-        },
-      },
-      {
-        id: '2',
-        nome: 'Maria Santos',
-        email: 'maria@example.com',
-        status: 'pendente',
-        fit_score: null,
-        perfil: null,
-      },
-    ])
-
-    setLoading(false)
+    fetchProcesso()
   }, [processoId])
 
+  const fetchProcesso = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(`/api/processos/${processoId}`)
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar processo')
+      }
+
+      const data = await response.json()
+
+      // Processo
+      setProcesso(data.processo)
+
+      // Função ideal (pegar primeira função)
+      if (data.funcoes && data.funcoes.length > 0) {
+        setFuncaoIdeal(data.funcoes[0].perfil_ideal)
+      }
+
+      // Líder
+      if (data.lider && data.lider.perfil) {
+        setLiderPerfil(data.lider.perfil)
+      }
+
+      // Candidatos - mapear para formato esperado
+      const candidatosMapeados = data.candidatos.map((c: any) => ({
+        id: c.id,
+        nome: c.usuario?.nome || 'Sem nome',
+        email: c.usuario?.email || '',
+        status: c.status,
+        fit_score: c.fit_analise?.score_geral || null,
+        fit_funcao: c.fit_analise?.fit_funcao || null,
+        fit_lider: c.fit_analise?.fit_lider || null,
+        perfil: c.perfil || null,
+      }))
+
+      setCandidatos(candidatosMapeados)
+    } catch (err) {
+      console.error('Erro ao buscar processo:', err)
+      setError(
+        err instanceof Error ? err.message : 'Erro ao carregar processo'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-textSecondary">Carregando processo...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-error" />
+          </div>
+          <h2 className="text-h3 font-semibold text-textPrimary mb-2">
+            Erro ao carregar processo
+          </h2>
+          <p className="text-body text-textSecondary mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={fetchProcesso} className="btn-primary">
+              Tentar Novamente
+            </button>
+            <Link href="/dashboard" className="btn-outline">
+              Voltar ao Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -35,22 +35,37 @@ export default function DefinirPerfilIdeal() {
   }
 
   const salvarPerfil = async () => {
+    if (!funcaoId) {
+      alert('ID da função não encontrado')
+      return
+    }
+
     setLoading(true)
 
     try {
-      // TODO: Salvar no banco via API
       const response = await fetch(`/api/funcoes/${funcaoId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ perfil_ideal: perfil }),
       })
 
-      if (!response.ok) throw new Error('Erro ao salvar perfil ideal')
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao salvar perfil ideal')
+      }
 
+      const data = await response.json()
+      console.log('Perfil ideal salvo com sucesso:', data)
+
+      // Redirecionar para a página do processo
       router.push(`/dashboard/processo/${processoId}`)
     } catch (error) {
-      console.error('Erro ao salvar:', error)
-      alert('Erro ao salvar perfil ideal')
+      console.error('Erro ao salvar perfil ideal:', error)
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Erro ao salvar perfil ideal. Tente novamente.'
+      )
     } finally {
       setLoading(false)
     }
