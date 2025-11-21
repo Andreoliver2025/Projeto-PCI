@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useMemo } from 'react'
 import { currentUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import {
@@ -12,10 +15,211 @@ import {
   ArrowRight,
   BarChart3,
   CheckCircle2,
-  Clock
+  Clock,
+  Search,
+  Filter
 } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
+
+// Componente de Lista com Filtros (Client Component)
+function ProcessosList({ processos }: { processos: any[] }) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'todos' | 'ativo' | 'rascunho' | 'finalizado'>('todos')
+  const [sortBy, setSortBy] = useState<'recentes' | 'antigos' | 'nome'>('recentes')
+
+  // Filtrar e ordenar processos
+  const filteredProcessos = useMemo(() => {
+    let result = [...processos]
+
+    // Filtrar por busca
+    if (searchTerm) {
+      result = result.filter((p) =>
+        p.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    }
+
+    // Filtrar por status
+    if (statusFilter !== 'todos') {
+      result = result.filter((p) => p.status === statusFilter)
+    }
+
+    // Ordenar
+    switch (sortBy) {
+      case 'antigos':
+        result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        break
+      case 'nome':
+        result.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
+        break
+      case 'recentes':
+      default:
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    }
+
+    return result
+  }, [processos, searchTerm, statusFilter, sortBy])
+
+  return (
+    <div className="space-md">
+      {/* Filtros e Busca */}
+      <div className="card p-6">
+        <div className="space-md">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-textSecondary" />
+            <h3 className="text-h3 font-semibold text-textPrimary">Filtros e Busca</h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Input de Busca */}
+            <div>
+              <label className="block text-caption font-medium text-textSecondary mb-2">
+                Buscar por nome
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-textSecondary" />
+                <input
+                  type="text"
+                  placeholder="Digite o nome do processo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-secondary-300 rounded-lg bg-white text-textPrimary placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Select de Status */}
+            <div>
+              <label className="block text-caption font-medium text-textSecondary mb-2">
+                Status
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full px-4 py-2.5 border border-secondary-300 rounded-lg bg-white text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all cursor-pointer"
+              >
+                <option value="todos">Todos os status</option>
+                <option value="ativo">Ativo</option>
+                <option value="rascunho">Rascunho</option>
+                <option value="finalizado">Finalizado</option>
+              </select>
+            </div>
+
+            {/* Select de Ordenação */}
+            <div>
+              <label className="block text-caption font-medium text-textSecondary mb-2">
+                Ordenar por
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full px-4 py-2.5 border border-secondary-300 rounded-lg bg-white text-textPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all cursor-pointer"
+              >
+                <option value="recentes">Mais recentes</option>
+                <option value="antigos">Mais antigos</option>
+                <option value="nome">Nome (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Resultado da busca */}
+          {searchTerm && (
+            <div className="text-caption text-textSecondary pt-2 border-t border-secondary-200">
+              Encontrados <span className="font-semibold text-textPrimary">{filteredProcessos.length}</span> processo(s)
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Lista de Processos */}
+      <div className="space-md">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-title text-textPrimary">
+            Seus Processos
+            {filteredProcessos.length > 0 && (
+              <span className="text-textSecondary font-normal ml-2">({filteredProcessos.length})</span>
+            )}
+          </h2>
+        </div>
+
+        {filteredProcessos.length === 0 ? (
+          <div className="card text-center py-12">
+            <Search className="w-12 h-12 text-textSecondary/30 mx-auto mb-4" />
+            <p className="text-h3 text-textSecondary mb-2">Nenhum processo encontrado</p>
+            <p className="text-body text-textSecondary mb-6">
+              Tente ajustar os filtros ou criar um novo processo
+            </p>
+            <Link href="/dashboard/novo-processo" className="btn-primary inline-flex">
+              <Plus className="w-4 h-4" />
+              Criar Processo
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {filteredProcessos.map((processo: any) => (
+              <Link
+                key={processo.id}
+                href={`/dashboard/processo/${processo.id}`}
+                className="card-interactive hover:border-primary/30 transition-all"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-h3 font-semibold text-textPrimary">
+                        {processo.nome}
+                      </h3>
+                      <span
+                        className={`badge ${
+                          processo.status === 'ativo'
+                            ? 'badge-success'
+                            : processo.status === 'rascunho'
+                            ? 'badge-warning'
+                            : 'badge-secondary'
+                        }`}
+                      >
+                        {processo.status === 'ativo'
+                          ? 'Ativo'
+                          : processo.status === 'rascunho'
+                          ? 'Rascunho'
+                          : processo.status === 'finalizado'
+                          ? 'Finalizado'
+                          : 'Arquivado'}
+                      </span>
+                    </div>
+                    {processo.descricao && (
+                      <p className="text-body text-textSecondary mb-3">
+                        {processo.descricao}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 text-caption text-textSecondary">
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="w-4 h-4" />
+                        {processo.funcoes?.length || 0} função(ões)
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        {processo.candidatos_count} candidato(s)
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        Criado em{' '}
+                        {new Date(processo.created_at).toLocaleDateString(
+                          'pt-BR'
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-textSecondary group-hover:text-primary transition-colors" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -368,73 +572,8 @@ export default async function Dashboard() {
             </div>
           </>
         ) : (
-          /* Lista de Processos */
-          <div className="space-md">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-title text-textPrimary">Seus Processos</h2>
-            </div>
-
-            {/* Cards de Processo */}
-            <div className="grid gap-4">
-              {processos.map((processo: any) => (
-                <Link
-                  key={processo.id}
-                  href={`/dashboard/processo/${processo.id}`}
-                  className="card-interactive hover:border-primary/30 transition-all"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-h3 font-semibold text-textPrimary">
-                          {processo.nome}
-                        </h3>
-                        <span
-                          className={`badge ${
-                            processo.status === 'ativo'
-                              ? 'badge-success'
-                              : processo.status === 'rascunho'
-                              ? 'badge-warning'
-                              : 'badge-secondary'
-                          }`}
-                        >
-                          {processo.status === 'ativo'
-                            ? 'Ativo'
-                            : processo.status === 'rascunho'
-                            ? 'Rascunho'
-                            : processo.status === 'finalizado'
-                            ? 'Finalizado'
-                            : 'Arquivado'}
-                        </span>
-                      </div>
-                      {processo.descricao && (
-                        <p className="text-body text-textSecondary mb-3">
-                          {processo.descricao}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-caption text-textSecondary">
-                        <span className="flex items-center gap-1">
-                          <Briefcase className="w-4 h-4" />
-                          {processo.funcoes?.length || 0} função(ões)
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          {processo.candidatos_count} candidato(s)
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          Criado em{' '}
-                          {new Date(processo.created_at).toLocaleDateString(
-                            'pt-BR'
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-textSecondary group-hover:text-primary transition-colors" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          /* Lista de Processos com Filtros */
+          <ProcessosList processos={processos} />
         )}
       </main>
     </div>
