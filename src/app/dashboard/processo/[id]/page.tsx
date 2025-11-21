@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, UserPlus, Mail, FileText, TrendingUp, Crown, Briefcase } from 'lucide-react'
+import { ArrowLeft, UserPlus, Mail, FileText, TrendingUp, Crown, Briefcase, Edit3 } from 'lucide-react'
 import FitComparacaoCompleta from '@/components/FitComparacaoCompleta'
 import ConviteCandidatoModal from '@/components/ConviteCandidatoModal'
+import EditarProcessoModal from '@/components/EditarProcessoModal'
 import { PERFIS_IDEAIS_TEMPLATE } from '@/lib/tipos/perfil-ideal'
 
 export default function ProcessoDetalhes() {
@@ -20,6 +21,7 @@ export default function ProcessoDetalhes() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [modalConviteAberto, setModalConviteAberto] = useState(false)
+  const [modalEditarAberto, setModalEditarAberto] = useState(false)
 
   useEffect(() => {
     fetchProcesso()
@@ -122,19 +124,28 @@ export default function ProcessoDetalhes() {
             Voltar para Dashboard
           </Link>
           <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-2xl font-bold text-textPrimary">{processo?.nome}</h1>
-              <div className="flex items-center gap-3 mt-1">
-                <span className={`badge ${processo?.status === 'ativo' ? 'badge-accent' : 'badge-secondary'}`}>
-                  {processo?.status}
-                </span>
-                {processo?.lider_nome && (
-                  <span className="text-caption text-textSecondary flex items-center gap-1">
-                    <Crown className="w-3 h-3" aria-hidden="true" />
-                    Líder: {processo.lider_nome}
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-textPrimary">{processo?.nome}</h1>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className={`badge ${processo?.status === 'ativo' ? 'badge-accent' : 'badge-secondary'}`}>
+                    {processo?.status}
                   </span>
-                )}
+                  {processo?.lider_nome && (
+                    <span className="text-caption text-textSecondary flex items-center gap-1">
+                      <Crown className="w-3 h-3" aria-hidden="true" />
+                      Líder: {processo.lider_nome}
+                    </span>
+                  )}
+                </div>
               </div>
+              <button
+                onClick={() => setModalEditarAberto(true)}
+                className="btn-ghost p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Editar processo"
+              >
+                <Edit3 className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
             <div className="flex gap-2">
               <Link
@@ -303,6 +314,16 @@ export default function ProcessoDetalhes() {
         onClose={() => setModalConviteAberto(false)}
         processoId={processoId}
       />
+
+      {/* Modal de Editar Processo */}
+      {processo && (
+        <EditarProcessoModal
+          isOpen={modalEditarAberto}
+          onClose={() => setModalEditarAberto(false)}
+          processo={processo}
+          onSuccess={fetchProcesso}
+        />
+      )}
     </div>
   )
 }
