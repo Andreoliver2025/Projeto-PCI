@@ -1,0 +1,159 @@
+=======================================================================
+   B4 & B5 - IMPLEMENTAÇÃO COMPLETA E OTIMIZADA
+=======================================================================
+
+📦 ARQUIVOS CRIADOS (8 TOTAL):
+
+B4 - SISTEMA DE PERGUNTAS CUSTOMIZADAS:
+----------------------------------------
+✅ 1. /src/app/api/processos/[id]/perguntas/route.ts
+     - GET: Lista perguntas ordenadas
+     - POST: Cria nova pergunta (auto-ordem)
+     - Validação de campos obrigatórios
+
+✅ 2. /src/app/api/perguntas/[id]/route.ts
+     - PATCH: Edita pergunta (texto, tempo, ordem)
+     - DELETE: Remove e reordena automaticamente
+     - Fallback para reordenação manual
+
+✅ 3. /src/app/dashboard/processo/[id]/perguntas/page.tsx
+     - Interface admin completa
+     - Form para criar pergunta
+     - Lista com edit/delete inline
+     - Botões ↑↓ para reordenar
+     - Select tempo: 60s, 90s, 120s, 180s, 300s
+
+✅ 4. /src/app/candidato/processo/[id]/perguntas/page.tsx
+     - Interface candidato otimizada
+     - Progress bar visual (X de N)
+     - Timer countdown por pergunta
+     - AudioRecorder integrado
+     - Upload + salvar automático
+     - Tela de conclusão
+
+B5 - UPLOAD E ARMAZENAMENTO DE ÁUDIOS:
+---------------------------------------
+✅ 5. /src/app/api/upload-audio/route.ts
+     - Recebe FormData (audio blob)
+     - Upload para Supabase Storage
+     - Bucket: audio-respostas
+     - Formato: {candidato_id}/{pergunta_id}_{timestamp}.webm
+     - Retorna URL pública
+
+✅ 6. /src/app/api/respostas-audio/route.ts
+     - POST: Salva resposta no banco
+     - Chama transcrição em background
+     - GET: Lista respostas de candidato
+     - Validação de duplicatas
+
+ARQUIVOS AUXILIARES:
+--------------------
+✅ 7. /src/app/api/candidato/processo/[id]/route.ts
+     - Busca candidato por processo + usuário
+     - Necessário para página do candidato
+
+✅ 8. /supabase/storage-setup.sql
+     - Cria bucket 'audio-respostas'
+     - Configura políticas de acesso
+     - Upload autenticado, leitura pública
+
+✅ 9. /B4_B5_SETUP.md
+     - Guia completo de configuração
+     - Documentação de APIs
+     - Fluxo de teste
+     - Troubleshooting
+
+=======================================================================
+   TECNOLOGIAS E PADRÕES UTILIZADOS
+=======================================================================
+
+✅ Next.js 14 (App Router)
+✅ TypeScript com tipagem completa
+✅ Clerk para autenticação
+✅ Supabase (Database + Storage)
+✅ Service Role Key para operações administrativas
+✅ Tailwind CSS para estilos
+✅ lucide-react para ícones
+✅ AudioRecorder component reutilizado
+✅ Tratamento de erros robusto
+✅ Validações em todas APIs
+
+=======================================================================
+   RECURSOS IMPLEMENTADOS
+=======================================================================
+
+ADMIN (Dashboard):
+------------------
+✅ CRUD completo de perguntas
+✅ Reordenação com botões visuais
+✅ Edição inline
+✅ Validações de formulário
+✅ Feedback visual de ações
+
+CANDIDATO:
+----------
+✅ Visualização de perguntas sequencial
+✅ Gravação de áudio com timer
+✅ Progress bar (X de N perguntas)
+✅ Upload automático para Storage
+✅ Transcrição em background
+✅ Tela de conclusão
+✅ Validação de duplicatas
+✅ Navegação intuitiva
+
+BACKEND (APIs):
+---------------
+✅ RESTful endpoints
+✅ Autenticação em todas rotas
+✅ Validação de permissões
+✅ Reordenação automática
+✅ Upload para Supabase Storage
+✅ Integração com transcrição
+✅ Queries otimizadas
+
+STORAGE:
+--------
+✅ Bucket público para leitura
+✅ Upload autenticado
+✅ Estrutura organizada por candidato
+✅ URLs públicas via CDN
+✅ Políticas RLS configuradas
+
+=======================================================================
+   SEGURANÇA
+=======================================================================
+
+✅ Autenticação Clerk em todas rotas
+✅ Service Role Key em variáveis de ambiente
+✅ Validação de candidato antes de upload
+✅ Verificação de duplicatas
+✅ RLS (Row Level Security) no Supabase
+✅ Bucket público apenas para leitura
+✅ CORS configurado
+
+=======================================================================
+   PRÓXIMOS PASSOS (Setup)
+=======================================================================
+
+1. Execute storage-setup.sql no Supabase Dashboard
+2. Verifique variáveis de ambiente (.env.local)
+3. Teste criação de perguntas (admin)
+4. Teste resposta com áudio (candidato)
+5. Verifique Storage no Supabase
+6. Confira transcrições no banco
+
+DEPLOY:
+-------
+1. Execute storage-setup.sql em produção
+2. Configure env vars no Netlify/Vercel
+3. Teste upload em produção
+4. Verifique URLs públicas
+
+=======================================================================
+   STATUS: ✅ IMPLEMENTAÇÃO 100% COMPLETA E TESTÁVEL
+=======================================================================
+
+Data: 2025-11-21
+Arquivos: 9 criados
+Linhas de código: ~1200+
+Tempo estimado de implementação: 30-45 min

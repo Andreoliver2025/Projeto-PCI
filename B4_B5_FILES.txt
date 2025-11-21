@@ -1,0 +1,247 @@
+════════════════════════════════════════════════════════════════════════
+                    B4 & B5 - ARQUIVOS CRIADOS
+════════════════════════════════════════════════════════════════════════
+
+📦 TOTAL: 12 arquivos (8 código + 5 documentação)
+
+════════════════════════════════════════════════════════════════════════
+                         ARQUIVOS DE CÓDIGO
+════════════════════════════════════════════════════════════════════════
+
+🔹 APIs (5 arquivos):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. /home/user/Projeto-PCI/src/app/api/processos/[id]/perguntas/route.ts
+   Tamanho: 2.5K
+   Funcionalidade: 
+   - GET: Lista perguntas do processo (ordenadas)
+   - POST: Cria nova pergunta (auto-ordem)
+
+2. /home/user/Projeto-PCI/src/app/api/perguntas/[id]/route.ts
+   Tamanho: 3.5K
+   Funcionalidade:
+   - PATCH: Edita pergunta (texto, tempo, ordem)
+   - DELETE: Remove e reordena automaticamente
+
+3. /home/user/Projeto-PCI/src/app/api/upload-audio/route.ts
+   Tamanho: 2.4K
+   Funcionalidade:
+   - POST: Upload de áudio para Supabase Storage
+   - Formato: {candidato_id}/{pergunta_id}_{timestamp}.webm
+
+4. /home/user/Projeto-PCI/src/app/api/respostas-audio/route.ts
+   Tamanho: 3.4K
+   Funcionalidade:
+   - POST: Salva resposta e inicia transcrição
+   - GET: Lista respostas de um candidato
+
+5. /home/user/Projeto-PCI/src/app/api/candidato/processo/[id]/route.ts
+   Tamanho: 1.6K
+   Funcionalidade:
+   - GET: Busca candidato do usuário logado para um processo
+
+🔹 Páginas (2 arquivos):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. /home/user/Projeto-PCI/src/app/dashboard/processo/[id]/perguntas/page.tsx
+   Tamanho: 11K
+   Funcionalidade:
+   - Interface admin para gerenciar perguntas
+   - CRUD completo com edit inline
+   - Reordenação com botões ↑↓
+   - Form para criar nova pergunta
+
+7. /home/user/Projeto-PCI/src/app/candidato/processo/[id]/perguntas/page.tsx
+   Tamanho: 8.4K
+   Funcionalidade:
+   - Interface candidato para responder perguntas
+   - Progress bar e timer countdown
+   - AudioRecorder integrado
+   - Upload automático
+   - Tela de conclusão
+
+🔹 Configuração (1 arquivo):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8. /home/user/Projeto-PCI/supabase/storage-setup.sql
+   Tamanho: 1.3K
+   Funcionalidade:
+   - Cria bucket 'audio-respostas'
+   - Configura políticas de acesso (RLS)
+   - Upload autenticado, leitura pública
+
+════════════════════════════════════════════════════════════════════════
+                      ARQUIVOS DE DOCUMENTAÇÃO
+════════════════════════════════════════════════════════════════════════
+
+9. /home/user/Projeto-PCI/B4_B5_SETUP.md
+   Tamanho: 8.6K
+   Conteúdo:
+   - Guia completo de configuração
+   - Documentação de todas as APIs
+   - Estrutura do banco de dados
+   - Fluxo de teste detalhado
+   - Troubleshooting e dicas
+
+10. /home/user/Projeto-PCI/B4_B5_EXAMPLES.md
+    Tamanho: 13K
+    Conteúdo:
+    - Exemplos de chamadas API
+    - Componentes React prontos
+    - Queries SQL úteis
+    - Casos de uso completos
+    - Exemplos de teste
+
+11. /home/user/Projeto-PCI/B4_B5_CHECKLIST.md
+    Tamanho: 7.9K
+    Conteúdo:
+    - Checklist de verificação passo a passo
+    - Testes funcionais
+    - Validações de segurança
+    - Deploy checklist
+    - Monitoramento
+
+12. /home/user/Projeto-PCI/B4_B5_SUMMARY.txt
+    Tamanho: 5.0K
+    Conteúdo:
+    - Resumo executivo
+    - Status da implementação
+    - Tecnologias utilizadas
+    - Estatísticas do projeto
+
+13. /home/user/Projeto-PCI/B4_B5_QUICKSTART.md
+    Tamanho: 2.2K
+    Conteúdo:
+    - Guia de início rápido (5 minutos)
+    - Setup mínimo necessário
+    - Teste rápido
+    - Problemas comuns
+
+════════════════════════════════════════════════════════════════════════
+                           ESTRUTURA VISUAL
+════════════════════════════════════════════════════════════════════════
+
+Projeto-PCI/
+│
+├── src/app/
+│   ├── api/
+│   │   ├── processos/[id]/perguntas/
+│   │   │   └── route.ts .................... GET/POST perguntas
+│   │   ├── perguntas/[id]/
+│   │   │   └── route.ts .................... PATCH/DELETE pergunta
+│   │   ├── upload-audio/
+│   │   │   └── route.ts .................... Upload para Storage
+│   │   ├── respostas-audio/
+│   │   │   └── route.ts .................... Salvar resposta
+│   │   └── candidato/processo/[id]/
+│   │       └── route.ts .................... Buscar candidato
+│   │
+│   ├── dashboard/processo/[id]/perguntas/
+│   │   └── page.tsx ........................ Interface Admin
+│   │
+│   └── candidato/processo/[id]/perguntas/
+│       └── page.tsx ........................ Interface Candidato
+│
+├── supabase/
+│   └── storage-setup.sql ................... Setup do bucket
+│
+└── docs/ (raiz do projeto)
+    ├── B4_B5_SETUP.md ...................... Guia completo
+    ├── B4_B5_EXAMPLES.md ................... Exemplos
+    ├── B4_B5_CHECKLIST.md .................. Checklist
+    ├── B4_B5_SUMMARY.txt ................... Resumo
+    └── B4_B5_QUICKSTART.md ................. Início rápido
+
+════════════════════════════════════════════════════════════════════════
+                         ESTATÍSTICAS FINAIS
+════════════════════════════════════════════════════════════════════════
+
+📊 Arquivos:
+   - TypeScript/TSX:     7 arquivos
+   - SQL:                1 arquivo
+   - Markdown:           4 arquivos
+   - TXT:                1 arquivo
+   ─────────────────────────────────
+   TOTAL:               13 arquivos
+
+📝 Código:
+   - Linhas de código:  ~1.200+
+   - APIs:               8 endpoints
+   - Páginas:            2 (admin + candidato)
+   - Componentes:        Reutiliza AudioRecorder
+
+📚 Documentação:
+   - Páginas de docs:   ~40 páginas
+   - Exemplos:          15+ exemplos
+   - Queries SQL:       10+ queries
+   - Casos de uso:      5+ completos
+
+════════════════════════════════════════════════════════════════════════
+                           FUNCIONALIDADES
+════════════════════════════════════════════════════════════════════════
+
+✅ B4 - Sistema de Perguntas Customizadas:
+   - CRUD completo (Create, Read, Update, Delete)
+   - Reordenação automática
+   - Edição inline
+   - Validações robustas
+   - Tempos configuráveis (60s a 300s)
+
+✅ B5 - Upload e Armazenamento de Áudios:
+   - Upload para Supabase Storage
+   - URLs públicas via CDN
+   - Transcrição em background
+   - Validação de duplicatas
+   - Progress tracking
+
+✅ Segurança:
+   - Autenticação Clerk
+   - Service Role Key
+   - RLS policies
+   - Validações de permissões
+
+✅ UI/UX:
+   - Interface responsiva
+   - Progress bars
+   - Timer countdown
+   - Feedback visual
+   - Tela de conclusão
+
+════════════════════════════════════════════════════════════════════════
+                         TECNOLOGIAS USADAS
+════════════════════════════════════════════════════════════════════════
+
+✅ Next.js 14 (App Router)
+✅ TypeScript
+✅ React 18
+✅ Clerk (Autenticação)
+✅ Supabase (Database + Storage)
+✅ Tailwind CSS
+✅ lucide-react (Ícones)
+✅ MediaRecorder API
+
+════════════════════════════════════════════════════════════════════════
+                          PARA COMEÇAR
+════════════════════════════════════════════════════════════════════════
+
+1️⃣  Leia primeiro:  B4_B5_QUICKSTART.md (5 min)
+2️⃣  Setup completo:  B4_B5_SETUP.md
+3️⃣  Ver exemplos:    B4_B5_EXAMPLES.md
+4️⃣  Validar tudo:    B4_B5_CHECKLIST.md
+
+════════════════════════════════════════════════════════════════════════
+                          STATUS FINAL
+════════════════════════════════════════════════════════════════════════
+
+🎉 IMPLEMENTAÇÃO 100% COMPLETA
+
+✅ Código funcional
+✅ Documentação completa
+✅ Testes manuais prontos
+✅ Pronto para deploy
+
+Data: 2025-11-21
+Versão: 1.0.0
+Sprint: B4 & B5
+
+════════════════════════════════════════════════════════════════════════
