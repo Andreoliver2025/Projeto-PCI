@@ -11,7 +11,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { processoId, email, nome } = await req.json()
+    const { processoId, email, nome, tipo = 'candidato' } = await req.json()
+
+    // Validar tipo
+    if (!['candidato', 'lider'].includes(tipo)) {
+      return NextResponse.json(
+        { error: 'Tipo inválido. Deve ser "candidato" ou "lider"' },
+        { status: 400 }
+      )
+    }
 
     // Gerar token único para o convite
     const token = crypto.randomUUID()
@@ -25,6 +33,7 @@ export async function POST(req: NextRequest) {
         processo_id: processoId,
         email,
         nome,
+        tipo,
         token,
         expires_at: expiresAt.toISOString(),
         status: 'pendente',
@@ -34,8 +43,9 @@ export async function POST(req: NextRequest) {
 
     if (conviteError) throw conviteError
 
-    // Montar link único
-    const conviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/candidato/convite/${token}`
+    // Montar link único baseado no tipo
+    const baseUrl = tipo === 'lider' ? 'lider' : 'candidato'
+    const conviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://projetopci.netlify.app'}/${baseUrl}/convite/${token}`
 
     // TODO: Integrar com serviço de email (Resend, SendGrid, etc)
     // Por enquanto, apenas retornar o link

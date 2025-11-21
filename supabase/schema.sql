@@ -107,6 +107,22 @@ CREATE TABLE respostas_audio (
   UNIQUE(candidato_id, pergunta_id)
 );
 
+-- Tabela de Convites
+CREATE TABLE convites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  processo_id UUID NOT NULL REFERENCES processos(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  nome TEXT,
+  tipo TEXT NOT NULL CHECK (tipo IN ('candidato', 'lider')),
+  token TEXT UNIQUE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pendente' CHECK (status IN ('pendente', 'aceito', 'expirado', 'cancelado')),
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  accepted_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+  UNIQUE(processo_id, email, tipo)
+);
+
 -- Tabela de Análises de Fit
 CREATE TABLE fit_analises (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

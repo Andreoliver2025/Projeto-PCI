@@ -90,12 +90,30 @@ export async function POST(
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 14) // 14 dias para líder completar
 
-    // TODO: Salvar convite em tabela de convites_lider (criar se necessário)
-    // TODO: Enviar email com link para testes
+    // Salvar convite na tabela convites
+    const { error: conviteError } = await supabase
+      .from('convites')
+      .insert({
+        processo_id: params.id,
+        email: email_lider,
+        nome: nome_lider || email_lider.split('@')[0],
+        tipo: 'lider',
+        token,
+        expires_at: expiresAt.toISOString(),
+        status: 'pendente',
+      })
 
-    const conviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/lider/convite/${token}`
+    if (conviteError) {
+      console.error('Erro ao salvar convite:', conviteError)
+      // Continua mesmo com erro para não travar o fluxo
+    }
+
+    const conviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://projetopci.netlify.app'}/lider/convite/${token}`
 
     console.log(`Convite para líder: ${conviteUrl}`)
+
+    // TODO: Integrar com serviço de email (Resend, SendGrid)
+    // Por enquanto apenas retorna a URL
 
     return NextResponse.json({
       message: 'Líder associado com sucesso',
