@@ -37,18 +37,40 @@ export default function TesteDISCLider() {
   const finalizarTeste = async () => {
     setLoading(true)
 
-    // Calcular resultado
-    const result = calcularDISC(respostas)
-    setResultado(result)
+    try {
+      // Calcular resultado
+      const result = calcularDISC(respostas)
+      setResultado(result)
 
-    // TODO: Salvar perfil do líder no banco via API
-    console.log('Resultado DISC (Líder):', result)
+      // Salvar perfil do líder no banco via API
+      const response = await fetch('/api/perfis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          disc_d: result.d,
+          disc_i: result.i,
+          disc_s: result.s,
+          disc_c: result.c,
+        }),
+      })
 
-    setLoading(false)
+      if (!response.ok) {
+        throw new Error('Erro ao salvar perfil')
+      }
+
+      console.log('Perfil DISC (Líder) salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar perfil DISC do líder:', error)
+      // Continua mesmo com erro para não travar o usuário
+    } finally {
+      setLoading(false)
+    }
   }
 
   const salvarEContinuar = async () => {
-    // TODO: Salvar perfil no banco
+    // Redirecionar para o teste MBTI de líder
     router.push(`/lider/testes/mbti?processo=${processoId}`)
   }
 

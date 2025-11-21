@@ -37,19 +37,43 @@ export default function TesteMBTILider() {
   const finalizarTeste = async () => {
     setLoading(true)
 
-    // Calcular resultado
-    const result = calcularMBTI(respostas)
-    setResultado(result)
+    try {
+      // Calcular resultado
+      const result = calcularMBTI(respostas)
+      setResultado(result)
 
-    // TODO: Salvar perfil do líder no banco via API
-    console.log('Resultado MBTI (Líder):', result)
+      // Salvar perfil do líder no banco via API
+      const response = await fetch('/api/perfis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mbti_type: result.tipo,
+          mbti_e_i: result.e_i,
+          mbti_s_n: result.s_n,
+          mbti_t_f: result.t_f,
+          mbti_j_p: result.j_p,
+        }),
+      })
 
-    setLoading(false)
+      if (!response.ok) {
+        throw new Error('Erro ao salvar perfil')
+      }
+
+      console.log('Perfil MBTI (Líder) salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar perfil MBTI do líder:', error)
+      // Continua mesmo com erro para não travar o usuário
+    } finally {
+      setLoading(false)
+    }
   }
 
   const concluir = async () => {
-    // TODO: Atualizar status do líder no processo
-    router.push(`/lider/dashboard?processo=${processoId}`)
+    // Redirecionar para dashboard de líder (quando implementado)
+    // Por enquanto redireciona para dashboard principal
+    router.push(`/dashboard`)
   }
 
   const pergunta = mbtiQuestions[currentQuestion]

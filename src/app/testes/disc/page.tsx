@@ -37,19 +37,48 @@ export default function TesteDISC() {
   const finalizarTeste = async () => {
     setLoading(true)
 
-    // Calcular resultado
-    const result = calcularDISC(respostas)
-    setResultado(result)
+    try {
+      // Calcular resultado
+      const result = calcularDISC(respostas)
+      setResultado(result)
 
-    // TODO: Salvar no banco via API
-    console.log('Resultado DISC:', result)
+      // Salvar no banco via API
+      const response = await fetch('/api/perfis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          disc_d: result.d,
+          disc_i: result.i,
+          disc_s: result.s,
+          disc_c: result.c,
+        }),
+      })
 
-    setLoading(false)
+      if (!response.ok) {
+        throw new Error('Erro ao salvar perfil')
+      }
+
+      console.log('Perfil DISC salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar perfil DISC:', error)
+      // Continua mesmo com erro para não travar o usuário
+    } finally {
+      setLoading(false)
+    }
   }
 
   const salvarEContinuar = async () => {
-    // TODO: Salvar perfil no banco
-    router.push(`/testes/mbti?processo=${processoId}`)
+    const origem = searchParams.get('origem')
+
+    if (origem === 'perfil') {
+      // Se veio da página de perfil, redirecionar para MBTI e depois voltar
+      router.push('/testes/mbti?origem=perfil')
+    } else {
+      // Se veio de um processo, continuar no fluxo do processo
+      router.push(`/testes/mbti?processo=${processoId}`)
+    }
   }
 
   const pergunta = discQuestions[currentQuestion]

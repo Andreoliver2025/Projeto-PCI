@@ -20,16 +20,31 @@ export default function NovoProcesso() {
     setLoading(true)
 
     try {
-      // TODO: Implementar API call
-      console.log('Criando processo:', formData)
+      const response = await fetch('/api/processos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erro ao criar processo')
+      }
 
-      router.push('/dashboard')
+      const data = await response.json()
+      console.log('Processo criado com sucesso:', data)
+
+      // Redirecionar para a página do processo criado
+      router.push(`/dashboard/processo/${data.processo.id}`)
     } catch (error) {
       console.error('Erro ao criar processo:', error)
-      alert('Erro ao criar processo. Tente novamente.')
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'Erro ao criar processo. Tente novamente.'
+      )
     } finally {
       setLoading(false)
     }

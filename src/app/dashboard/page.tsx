@@ -15,6 +15,62 @@ import {
   Clock
 } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+})
+
+async function getProcessos(clerkId: string) {
+  try {
+    // Buscar usuário
+    const { data: usuario } = await supabase
+      .from('usuarios')
+      .select('id')
+      .eq('clerk_id', clerkId)
+      .single()
+
+    if (!usuario) return []
+
+    // Buscar processos com funções e contar candidatos
+    const { data: processos } = await supabase
+      .from('processos')
+      .select(`
+        *,
+        funcoes(*)
+      `)
+      .eq('usuario_principal_id', usuario.id)
+      .order('created_at', { ascending: false })
+
+    if (!processos) return []
+
+    // Para cada processo, buscar contagem de candidatos
+    const processosComCandidatos = await Promise.all(
+      processos.map(async (processo) => {
+        const { count } = await supabase
+          .from('candidatos')
+          .select('*', { count: 'exact', head: true })
+          .eq('processo_id', processo.id)
+
+        return {
+          ...processo,
+          candidatos_count: count || 0,
+        }
+      })
+    )
+
+    return processosComCandidatos
+  } catch (error) {
+    console.error('Erro ao buscar processos:', error)
+    return []
+  }
+}
 
 export default async function Dashboard() {
   const user = await currentUser()
@@ -23,12 +79,24 @@ export default async function Dashboard() {
     redirect('/sign-in')
   }
 
-  // Dados mockados - substituir por dados reais do banco
-  const hasProcesses = false
+  // Buscar dados reais do banco
+  const processos = await getProcessos(user.id)
+  const hasProcesses = processos.length > 0
+
+  // Calcular stats reais
+  const activeProcesses = processos.filter(
+    (p: any) => p.status === 'ativo' || p.status === 'rascunho'
+  ).length
+
+  const totalCandidates = processos.reduce(
+    (acc: number, p: any) => acc + (p.candidatos_count || 0),
+    0
+  )
+
   const stats = {
-    activeProcesses: 0,
-    totalCandidates: 0,
-    successRate: 0
+    activeProcesses,
+    totalCandidates,
+    successRate: totalCandidates > 0 ? Math.round((activeProcesses / processos.length) * 100) : 0
   }
 
   return (
@@ -300,19 +368,71 @@ export default async function Dashboard() {
             </div>
           </>
         ) : (
-          /* Lista de Processos - Preparado para quando houver dados */
+          /* Lista de Processos */
           <div className="space-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-title text-textPrimary">Seus Processos</h2>
-              <Link href="/dashboard/processos" className="text-body text-primary hover:underline font-medium">
-                Ver todos
-              </Link>
             </div>
 
-            {/* Cards de Processo ficariam aqui */}
+            {/* Cards de Processo */}
             <div className="grid gap-4">
-              {/* Exemplo de card de processo */}
-              {/* Será implementado quando houver dados reais */}
+              {processos.map((processo: any) => (
+                <Link
+                  key={processo.id}
+                  href={`/dashboard/processo/${processo.id}`}
+                  className="card-interactive hover:border-primary/30 transition-all"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-h3 font-semibold text-textPrimary">
+                          {processo.nome}
+                        </h3>
+                        <span
+                          className={`badge ${
+                            processo.status === 'ativo'
+                              ? 'badge-success'
+                              : processo.status === 'rascunho'
+                              ? 'badge-warning'
+                              : 'badge-secondary'
+                          }`}
+                        >
+                          {processo.status === 'ativo'
+                            ? 'Ativo'
+                            : processo.status === 'rascunho'
+                            ? 'Rascunho'
+                            : processo.status === 'finalizado'
+                            ? 'Finalizado'
+                            : 'Arquivado'}
+                        </span>
+                      </div>
+                      {processo.descricao && (
+                        <p className="text-body text-textSecondary mb-3">
+                          {processo.descricao}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-caption text-textSecondary">
+                        <span className="flex items-center gap-1">
+                          <Briefcase className="w-4 h-4" />
+                          {processo.funcoes?.length || 0} função(ões)
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          {processo.candidatos_count} candidato(s)
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          Criado em{' '}
+                          {new Date(processo.created_at).toLocaleDateString(
+                            'pt-BR'
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-textSecondary group-hover:text-primary transition-colors" />
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}

@@ -36,15 +36,50 @@ export default function TesteMBTI() {
 
   const finalizarTeste = async () => {
     setLoading(true)
-    const result = calcularMBTI(respostas)
-    setResultado(result)
-    console.log('Resultado MBTI:', result)
-    setLoading(false)
+
+    try {
+      // Calcular resultado
+      const result = calcularMBTI(respostas)
+      setResultado(result)
+
+      // Salvar no banco via API
+      const response = await fetch('/api/perfis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          mbti_type: result.tipo,
+          mbti_e_i: result.e_i,
+          mbti_s_n: result.s_n,
+          mbti_t_f: result.t_f,
+          mbti_j_p: result.j_p,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Erro ao salvar perfil')
+      }
+
+      console.log('Perfil MBTI salvo com sucesso!')
+    } catch (error) {
+      console.error('Erro ao salvar perfil MBTI:', error)
+      // Continua mesmo com erro para não travar o usuário
+    } finally {
+      setLoading(false)
+    }
   }
 
   const salvarEContinuar = async () => {
-    // TODO: Salvar perfil completo no banco
-    router.push(`/dashboard?perfil_completo=true`)
+    const origem = searchParams.get('origem')
+
+    if (origem === 'perfil') {
+      // Se veio da página de perfil, voltar para lá
+      router.push('/dashboard/perfil')
+    } else {
+      // Se veio de um processo, ir para dashboard
+      router.push(`/dashboard?perfil_completo=true`)
+    }
   }
 
   const pergunta = mbtiQuestions[currentQuestion]
